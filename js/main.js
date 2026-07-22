@@ -3,10 +3,10 @@
 // ============================================================
 import { Game } from "./game.js";
 import { Controls } from "./controls.js";
-import { AVATAR_COLORS } from "./player.js";
+import { CHARACTERS, characterSVG, getCharacter } from "./player.js";
 import { WORLDS, getWorld } from "./worlds.js";
 import {
-  loadState, saveState, SHOP_ITEMS, bestVehicle,
+  loadState, saveState, SHOP_ITEMS, bestVehicle, bestHouse,
   renderShop, renderGarage
 } from "./shop.js";
 import { Multiplayer, makeRoomCode } from "./multiplayer.js";
@@ -15,13 +15,32 @@ import { MULTIPLAYER_ENABLED, GEM_VALUE } from "./config.js";
 const $ = (id) => document.getElementById(id);
 
 const state = loadState();
-const myColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+if (!state.character) state.character = CHARACTERS[0].id;
+const myColor = getCharacter(state.character).top;
 let game = null;
 let controls = null;
 let mp = null;
 
 // prefill name
 $("player-name").value = state.name || "";
+
+// ---------- character picker ----------
+function renderCharGrid() {
+  const grid = $("char-grid");
+  grid.innerHTML = "";
+  for (const c of CHARACTERS) {
+    const card = document.createElement("button");
+    card.className = "char-card" + (c.id === state.character ? " selected" : "");
+    card.innerHTML = characterSVG(c) + `<div class="cname">${c.name}</div>`;
+    card.addEventListener("click", () => {
+      state.character = c.id;
+      saveState(state);
+      renderCharGrid();
+    });
+    grid.appendChild(card);
+  }
+}
+renderCharGrid();
 
 // ---------- helpers ----------
 function toast(msg) {
@@ -39,6 +58,20 @@ function refreshHUD() {
   $("world-name").textContent = w.name;
   saveState(state);
 }
+
+// contextual enter/exit-house button
+function updateDoorButton(prompt) {
+  const btn = $("btn-door");
+  if (!prompt) { btn.classList.add("hidden"); return; }
+  btn.innerHTML = prompt === "enter" ? "🏠<br><small>ENTER</small>" : "🚪<br><small>EXIT</small>";
+  btn.dataset.mode = prompt;
+  btn.classList.remove("hidden");
+}
+$("btn-door").addEventListener("click", () => {
+  if (!game) return;
+  if ($("btn-door").dataset.mode === "enter") game.enterHouse();
+  else game.exitHouse();
+});
 
 function openPanel(id) {
   if (id === "shop-panel") renderShop(state, buyItem);
@@ -60,10 +93,13 @@ function startGame() {
   if (!game) {
     controls = new Controls();
     game = new Game(document.body, state, {
+      character: state.character,
       color: myColor,
       vehicle: () => bestVehicle(state),
+      house: () => bestHouse(state),
       onGems: () => { refreshHUD(); toast(`💎 +${GEM_VALUE}!`); },
       onWorld: (w) => refreshHUD(),
+      onDoorPrompt: updateDoorButton,
     });
     game.loadWorld(state.world);
     if (mp) game.attachMultiplayer(mp);
@@ -80,9 +116,10 @@ function buyItem(item) {
   saveState(state);
   renderShop(state, buyItem);
   refreshHUD();
+  if (item.type === "house" && game) game.refreshHouse();   // drop the new home into the world
   const line = { bike: "Zoom zoom! You're faster now! 🚲",
                  car: "Vroom! Cars are super fast! 🚗",
-                 house: "Home sweet home! 🏠",
+                 house: "Home sweet home! Find your 🏠 and go inside!",
                  airplane: "Wheee! Fastest of all! ✈️" }[item.type];
   toast(`${item.emoji} ${line}`);
 }
@@ -145,8 +182,8 @@ async function connectRoom(code, isHost) {
   try {
     state.name = ($("player-name").value || "Explorer").trim().slice(0, 12) || "Explorer";
     mp = new Multiplayer();
-    mp.setProfile(state.name, myColor);
-    await mp.join(code, { name: state.name, color: myColor, world: state.world });
+    mp.setProfile(state.name, myColor, state.character);
+    await mp.join(code, { name: state.name, color: myColor, char: state.character, world: state.world });
     // show the code big, then start
     $("room-info").innerHTML = `
       <p class="room-hint">${isHost ? "Share this code with your friend:" : "Joined room:"}</p>

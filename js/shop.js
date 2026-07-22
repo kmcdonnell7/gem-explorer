@@ -39,6 +39,13 @@ export function saveState(state) {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
 }
 
+// best house the player owns → which home appears in the world ("mansion" | "cottage" | null)
+export function bestHouse(state) {
+  if (state.owned.includes("mansion")) return "mansion";
+  if (state.owned.includes("cottage")) return "cottage";
+  return null;
+}
+
 // best vehicle the player owns → drives their speed
 export function bestVehicle(state) {
   if (state.owned.some(id => SHOP_ITEMS.find(i => i.id === id && i.type === "airplane"))) return "airplane";

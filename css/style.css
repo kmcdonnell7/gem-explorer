@@ -35,6 +35,21 @@ canvas { display: block; }
 }
 #player-name:focus { border-color: #5aa9e6; }
 
+/* character select */
+.char-select { margin-bottom: 18px; }
+.char-label { font-size: 0.85rem; color: #6a6a80; font-weight: 600; display: block; margin-bottom: 8px; }
+.char-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.char-card {
+  background: #f2f5fb; border: 3px solid transparent; border-radius: 14px;
+  padding: 6px 4px 4px; cursor: pointer; text-align: center; transition: transform .08s;
+}
+.char-card:active { transform: scale(0.94); }
+.char-card svg { width: 100%; height: auto; display: block; }
+.char-card .cname { font-size: 0.72rem; font-weight: 700; color: #45506e; margin-top: 2px; }
+.char-card.selected { border-color: #ff6a3d; background: #fff2ec; box-shadow: 0 4px 12px rgba(255,106,61,0.3); }
+
 .big-btn {
   font-size: 1.35rem; font-weight: 800; color: #fff;
   background: linear-gradient(180deg, #ff8a3d, #ff5e62);
@@ -125,6 +140,20 @@ canvas { display: block; }
 }
 .action-btn small { font-size: 0.55rem; letter-spacing: 1px; }
 .action-btn:active { transform: translateY(5px); box-shadow: 0 3px 0 #3c8a26; }
+
+/* contextual enter/exit-house button (sits above JUMP) */
+.door-btn {
+  position: fixed; right: calc(env(safe-area-inset-right) + 30px);
+  bottom: calc(env(safe-area-inset-bottom) + 155px);
+  width: 92px; height: 92px; border-radius: 50%; border: none; z-index: 21;
+  background: radial-gradient(circle at 40% 35%, #ffd36a, #ff9f1c);
+  color: #fff; font-size: 1.8rem; font-weight: 800; cursor: pointer; line-height: 1;
+  box-shadow: 0 8px 0 #c9760a, 0 10px 20px rgba(0,0,0,0.3);
+  animation: doorPop .25s ease;
+}
+.door-btn small { font-size: 0.55rem; letter-spacing: 1px; }
+.door-btn:active { transform: translateY(5px); box-shadow: 0 3px 0 #c9760a; }
+@keyframes doorPop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 /* Toast */
 .toast {

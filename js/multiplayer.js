@@ -42,7 +42,7 @@ export class Multiplayer {
 
     const meRef = ref(this._db, `rooms/${this.roomCode}/players/${this.playerId}`);
     this._meRef = meRef;
-    await set(meRef, { name: profile.name, color: profile.color, world: profile.world, x: 0, z: 0, ry: 0, t: 0 });
+    await set(meRef, { name: profile.name, color: profile.color, char: profile.char || "max", world: profile.world, x: 0, z: 0, ry: 0, t: 0 });
     onDisconnect(meRef).remove();
 
     this._playersRef = ref(this._db, `rooms/${this.roomCode}/players`);
@@ -64,12 +64,12 @@ export class Multiplayer {
     if (now - this._lastSend < 90) return;
     this._lastSend = now;
     this._fb.set(this._meRef, {
-      name: this._name, color: this._color, world,
+      name: this._name, color: this._color, char: this._char || "max", world,
       x: +x.toFixed(2), z: +z.toFixed(2), ry: +ry.toFixed(2), t: 0
     });
   }
 
-  setProfile(name, color) { this._name = name; this._color = color; }
+  setProfile(name, color, char) { this._name = name; this._color = color; this._char = char; }
 
   leave() {
     if (this._meRef && this._fb) { this._fb.remove(this._meRef); }

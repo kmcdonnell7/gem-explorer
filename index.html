@@ -28,6 +28,10 @@
         <label for="player-name">Your name</label>
         <input id="player-name" type="text" maxlength="12" placeholder="Explorer" autocomplete="off" />
       </div>
+      <div class="char-select">
+        <label class="char-label">Pick your character</label>
+        <div id="char-grid" class="char-grid"></div>
+      </div>
       <button id="btn-play-solo" class="big-btn">▶ Play</button>
       <div class="mp-row">
         <button id="btn-host" class="mp-btn">👯 Play with a friend</button>
@@ -68,6 +72,9 @@
 
     <!-- Action button (jump / horn) -->
     <button id="btn-jump" class="action-btn">⤴︎<br><small>JUMP</small></button>
+
+    <!-- Contextual door button (enter/exit house) -->
+    <button id="btn-door" class="door-btn hidden">🏠<br><small>ENTER</small></button>
 
     <div id="toast" class="toast hidden"></div>
   </div>
