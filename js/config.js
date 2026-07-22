@@ -16,13 +16,14 @@
 // ============================================================
 
 export const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",   // e.g. https://your-project-default-rtdb.firebaseio.com
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyA1yLvDfjP9PrvmpNv40ys-IMKmZuWmCkI",
+  authDomain: "gem-explorer-9fbb6.firebaseapp.com",
+  databaseURL: "https://gem-explorer-9fbb6-default-rtdb.firebaseio.com",
+  projectId: "gem-explorer-9fbb6",
+  storageBucket: "gem-explorer-9fbb6.firebasestorage.app",
+  messagingSenderId: "761108066426",
+  appId: "1:761108066426:web:ffafbc74b46e5d70e7cbc3",
+  measurementId: "G-F8CW4WWB1Q"
 };
 
 // Multiplayer is considered "available" only when a databaseURL is present.
