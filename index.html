@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#87ceeb" />
+  <title>Gem Explorer — LA · London · Miami</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Three.js loaded as an ES module from CDN -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- ===== Loading / Start screen ===== -->
+  <div id="start-screen" class="screen">
+    <div class="start-card">
+      <h1>💎 Gem Explorer</h1>
+      <p class="tagline">Explore <b>Los Angeles</b>, <b>London</b> &amp; <b>Miami</b>.<br/>Grab gems everywhere and buy cool stuff!</p>
+      <div class="name-row">
+        <label for="player-name">Your name</label>
+        <input id="player-name" type="text" maxlength="12" placeholder="Explorer" autocomplete="off" />
+      </div>
+      <button id="btn-play-solo" class="big-btn">▶ Play</button>
+      <div class="mp-row">
+        <button id="btn-host" class="mp-btn">👯 Play with a friend</button>
+      </div>
+      <p id="mp-status" class="mp-status"></p>
+    </div>
+    <p class="credit">Tip: works on iPad — use the joystick to move.</p>
+  </div>
+
+  <!-- ===== Friend / room dialog ===== -->
+  <div id="room-screen" class="screen hidden">
+    <div class="start-card">
+      <h1>👯 Play Together</h1>
+      <p class="tagline">You and a friend share a <b>room code</b> and explore the same world together — even from different iPads or computers.</p>
+      <div id="room-info"></div>
+      <button id="btn-room-back" class="big-btn secondary">← Back</button>
+    </div>
+  </div>
+
+  <!-- ===== In-game HUD ===== -->
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div class="pill" id="world-pill">📍 <span id="world-name">Los Angeles</span></div>
+      <div class="pill money" id="money-pill">💰 <span id="money">0</span></div>
+      <div class="pill gems" id="gem-pill">💎 <span id="gem-count">0</span></div>
+    </div>
+
+    <div class="hud-buttons">
+      <button id="btn-shop" class="round-btn">🛒</button>
+      <button id="btn-travel" class="round-btn">✈️</button>
+      <button id="btn-menu" class="round-btn">☰</button>
+    </div>
+
+    <!-- Touch joystick -->
+    <div id="joystick-zone">
+      <div id="joystick-base"><div id="joystick-thumb"></div></div>
+    </div>
+
+    <!-- Action button (jump / horn) -->
+    <button id="btn-jump" class="action-btn">⤴︎<br><small>JUMP</small></button>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <!-- ===== Shop panel ===== -->
+  <div id="shop-panel" class="panel hidden">
+    <div class="panel-head">
+      <h2>🛒 Shop</h2>
+      <button class="close-btn" data-close="shop-panel">✕</button>
+    </div>
+    <p class="panel-sub">You have <b>💰 <span class="money-echo">0</span></b>. Trade gems for money by collecting them!</p>
+    <div id="shop-items" class="shop-grid"></div>
+  </div>
+
+  <!-- ===== Travel panel ===== -->
+  <div id="travel-panel" class="panel hidden">
+    <div class="panel-head">
+      <h2>✈️ Travel</h2>
+      <button class="close-btn" data-close="travel-panel">✕</button>
+    </div>
+    <p class="panel-sub">Fly to another city. Your gems &amp; money come with you!</p>
+    <div id="travel-items" class="travel-grid"></div>
+  </div>
+
+  <!-- ===== Menu panel ===== -->
+  <div id="menu-panel" class="panel hidden">
+    <div class="panel-head">
+      <h2>☰ Menu</h2>
+      <button class="close-btn" data-close="menu-panel">✕</button>
+    </div>
+    <div id="garage" class="garage"></div>
+    <div class="menu-actions">
+      <button id="btn-invite" class="big-btn">👯 Invite a friend</button>
+      <button id="btn-quit" class="big-btn secondary">Quit to menu</button>
+    </div>
+    <p class="version">Gem Explorer v1.0</p>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
