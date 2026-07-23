@@ -139,6 +139,7 @@ function startGame() {
       onDoorPrompt: updateDoorButton,
       onHomeArrow: updateHomeArrow,
       onRespawn: () => toast("✨ Fresh gems appeared!"),
+      onInteract: (message, reward) => { refreshHUD(); toast(`${message}  💰+${reward}`); },
     });
     game.loadWorld(state.world);
     if (mp) game.attachMultiplayer(mp);

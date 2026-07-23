@@ -31,12 +31,12 @@ export const MULTIPLAYER_ENABLED = !!FIREBASE_CONFIG.databaseURL;
 
 // ---- Gameplay tuning -------------------------------------------------------
 export const GEM_VALUE = 25;          // money per gem when collected (gems respawn, so money is renewable)
-export const GEMS_PER_WORLD = 40;     // gems scattered around each world
+export const GEMS_PER_WORLD = 65;     // gems scattered around each world
 export const PLAYER_SPEED = 9;        // walk speed (units/sec)
 export const VEHICLE_SPEED_BONUS = {  // speed multiplier while owning/using
   none: 1, bike: 1.6, car: 2.4, airplane: 3.4
 };
-export const WORLD_SIZE = 90;         // half-extent of each city ground plane
+export const WORLD_SIZE = 118;        // half-extent of each city ground plane (bigger cities)
 
 // A little starting money so the shop feels alive immediately.
 export const STARTING_MONEY = 0;

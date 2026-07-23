@@ -6,6 +6,7 @@ import { buildWorld, getWorld } from "./worlds.js";
 import { makeAvatar, animateWalk } from "./player.js";
 import { buildHouseExterior, buildHouseInterior } from "./house.js";
 import { makeVehicle } from "./vehicles.js";
+import { spawnCrowd, updateCrowd } from "./npc.js";
 import { GEM_VALUE, GEMS_PER_WORLD, PLAYER_SPEED, VEHICLE_SPEED_BONUS, WORLD_SIZE } from "./config.js";
 
 // deterministic RNG so every player sees gems in the same spots
@@ -35,6 +36,13 @@ export class Game {
     this.remoteAvatars = {};
     this.multiplayer = null;
     this.running = false;
+    this.crowd = [];
+    this.interactables = [];
+    this._miniFrame = 0;
+
+    // minimap canvas (optional)
+    this.mini = document.getElementById("minimap");
+    this.miniCtx = this.mini ? this.mini.getContext("2d") : null;
 
     // house / interior state
     this.inside = false;
@@ -124,12 +132,14 @@ export class Game {
     const built = buildWorld(worldId);
     this.worldGroup = built.group;
     this._worldObstacles = built.obstacles.slice();
+    this.interactables = (built.interactables || []).map(it => ({ ...it, last: -9999 }));
 
     this._placeHouse();                       // add your home if you own one
     this.obstacles = this._worldObstacles;
     this.scene.add(this.worldGroup);
 
     this._spawnGems(worldId);
+    this.crowd = spawnCrowd(this.worldGroup, Math.random, () => this._randomOpenPos());
 
     // spawn right by your house if you own one (so it's easy to find), else on the road
     if (this.houseTier && this.doorWorld) {
@@ -186,6 +196,18 @@ export class Game {
     this._worldObstacles.push({ x: HOME_POS.x, z: HOME_POS.z, r: radius });
   }
 
+  _randomOpenPos() {
+    for (let k = 0; k < 20; k++) {
+      const x = (Math.random() * 2 - 1) * (WORLD_SIZE - 6);
+      const z = (Math.random() * 2 - 1) * (WORLD_SIZE - 6);
+      if (this.state.world === "miami" && z < -12) continue;
+      let ok = true;
+      for (const o of this._worldObstacles) { if (Math.hypot(x - o.x, z - o.z) < o.r + 1) { ok = false; break; } }
+      if (ok) return { x, z };
+    }
+    return { x: 0, z: 0 };
+  }
+
   _spawnGems(worldId) {
     const rng = mulberry32(hash(worldId));
     const collected = new Set(this.state.collected?.[worldId] || []);
@@ -194,6 +216,7 @@ export class Game {
       tries++;
       const x = (rng() * 2 - 1) * (WORLD_SIZE - 6);
       const z = (rng() * 2 - 1) * (WORLD_SIZE - 6);
+      if (worldId === "miami" && z < -12) continue;   // keep gems off the ocean
       let ok = true;
       for (const o of this._worldObstacles) { if (Math.hypot(x - o.x, z - o.z) < o.r + 2) { ok = false; break; } }
       if (!ok) continue;
@@ -384,6 +407,22 @@ export class Game {
       if (this.gems.length === 0) this._respawnGems();
     }
 
+    // crowd + interactive stands (outdoors only)
+    if (!this.inside) {
+      updateCrowd(this.crowd, dt, t, this.pos, () => this._randomOpenPos());
+      const now = performance.now();
+      for (const it of this.interactables) {
+        if (now - it.last > 9000 && Math.hypot(this.pos.x - it.x, this.pos.y - it.z) < it.r) {
+          it.last = now;
+          this.state.money += it.reward;
+          if (this.cb.onInteract) this.cb.onInteract(it.message, it.reward);
+        }
+      }
+    }
+
+    // minimap (throttled)
+    if (this.miniCtx && (++this._miniFrame % 5 === 0)) this._drawMinimap();
+
     // camera
     this.camera.position.set(this.pos.x + this.camOffset.x, this.camOffset.y, this.pos.y + this.camOffset.z);
     this.camera.lookAt(this.pos.x, 2, this.pos.y);
@@ -439,6 +478,62 @@ export class Game {
     if (!this.state.collected[this.state.world]) this.state.collected[this.state.world] = [];
     this.state.collected[this.state.world].push(g.index);
     if (this.cb.onGems) this.cb.onGems();
+  }
+
+  _drawMinimap() {
+    const ctx = this.miniCtx, S = this.mini.width, R = S / 2;
+    const world = getWorld(this.state.world);
+    ctx.clearRect(0, 0, S, S);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(R, R, R, 0, Math.PI * 2); ctx.clip();
+
+    if (this.inside) {
+      ctx.fillStyle = "#2a2f45"; ctx.fillRect(0, 0, S, S);
+      ctx.fillStyle = "#fff"; ctx.font = "bold 15px system-ui, sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("🏠 Inside", R, R);
+      ctx.restore(); return;
+    }
+
+    const sc = (R - 3) / WORLD_SIZE;
+    const mx = x => R + x * sc, my = z => R + z * sc;
+
+    ctx.fillStyle = "#" + world.ground.toString(16).padStart(6, "0");
+    ctx.fillRect(0, 0, S, S);
+    if (this.state.world === "miami") { ctx.fillStyle = "#1fb6d6"; ctx.fillRect(0, 0, S, my(-12)); }
+
+    ctx.fillStyle = "#3a3e47";
+    for (const off of [-60, 0, 60]) { ctx.fillRect(mx(off) - 2, 0, 4, S); ctx.fillRect(0, my(off) - 2, S, 4); }
+
+    ctx.fillStyle = "rgba(70,72,90,0.9)";
+    for (const o of this._worldObstacles) {
+      const s = Math.max(2.5, o.r * sc * 1.6);
+      ctx.fillRect(mx(o.x) - s / 2, my(o.z) - s / 2, s, s);
+    }
+
+    ctx.fillStyle = "#59e0ff";
+    for (const gm of this.gems) ctx.fillRect(mx(gm.x) - 1, my(gm.z) - 1, 2, 2);
+
+    ctx.fillStyle = "#ff9f1c";
+    for (const it of this.interactables) { ctx.beginPath(); ctx.arc(mx(it.x), my(it.z), 2.6, 0, 7); ctx.fill(); }
+
+    ctx.fillStyle = "#ffffff";
+    for (const n of this.crowd) ctx.fillRect(mx(n.pos.x) - 1, my(n.pos.y) - 1, 2, 2);
+
+    if (this.houseTier) {
+      ctx.fillStyle = "#ffd24a";
+      ctx.fillRect(mx(HOME_POS.x) - 3.5, my(HOME_POS.z) - 3.5, 7, 7);
+    }
+
+    // player arrow
+    const px = mx(this.pos.x), py = my(this.pos.y);
+    const ca = Math.atan2(Math.cos(this.facing), Math.sin(this.facing));
+    ctx.save(); ctx.translate(px, py); ctx.rotate(ca);
+    ctx.fillStyle = "#ff2d2d";
+    ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(-4, -4.5); ctx.lineTo(-4, 4.5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+
+    ctx.restore();
   }
 
   _disposeGroup(group) {

@@ -225,6 +225,19 @@ canvas { display: block; }
 .menu-actions { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 10px; }
 .version { color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-top: 14px; }
 
+/* ===== minimap ===== */
+#minimap-wrap {
+  position: fixed; z-index: 21;
+  top: calc(env(safe-area-inset-top) + 10px);
+  left: calc(env(safe-area-inset-left) + 12px);
+  width: 96px; height: 96px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.85);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3); overflow: hidden;
+  background: #6ec46e;
+}
+#minimap { width: 100%; height: 100%; display: block; }
+@media (max-width: 500px) { #minimap-wrap { width: 78px; height: 78px; } }
+
 /* ===== goal hint pill ===== */
 .hint-pill {
   position: fixed; top: calc(env(safe-area-inset-top) + 58px); left: 50%;
