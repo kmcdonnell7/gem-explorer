@@ -88,8 +88,9 @@ export class Game {
     this.pos = new THREE.Vector2(0, 6);
     this.facing = 0;
 
+    // Ground-plane directions that map to "up" and "right" on the iso screen.
     this.screenUp = new THREE.Vector2(-1, -1).normalize();
-    this.screenRight = new THREE.Vector2(-1, 1).normalize();
+    this.screenRight = new THREE.Vector2(1, -1).normalize();
   }
 
   _bindResize() {
