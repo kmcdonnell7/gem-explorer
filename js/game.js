@@ -128,8 +128,14 @@ export class Game {
 
     this._spawnGems(worldId);
 
-    this.pos.set(0, 8);
-    this.playerHolder.position.set(0, 0, 8);
+    // spawn right by your house if you own one (so it's easy to find), else on the road
+    if (this.houseTier && this.doorWorld) {
+      this.pos.set(this.doorWorld.x, this.doorWorld.z + 5);
+      this.facing = Math.PI;   // face toward the house (−z)
+    } else {
+      this.pos.set(0, 8);
+    }
+    this.playerHolder.position.set(this.pos.x, 0, this.pos.y);
 
     if (this.cb.onWorld) this.cb.onWorld(world);
   }
@@ -307,6 +313,25 @@ export class Game {
       this._jumpV -= 26 * dt;
       if (this._jumpH <= 0) { this._jumpH = 0; this._jumpV = undefined; }
       this.playerHolder.position.y = this._jumpH || 0;
+    }
+
+    // home compass arrow (points to your house when you own one & aren't near it)
+    if (this.cb.onHomeArrow) {
+      if (!this.inside && this.doorWorld) {
+        const wx = HOME_POS.x - this.pos.x, wz = HOME_POS.z - this.pos.y;
+        const dist = Math.hypot(wx, wz);
+        const sx = wx * this.screenRight.x + wz * this.screenRight.y;   // → screen right
+        const sy = wx * this.screenUp.x + wz * this.screenUp.y;         // → screen up
+        const deg = Math.atan2(sx, sy) * 180 / Math.PI;
+        this.cb.onHomeArrow({ show: dist > 9, deg, dist: Math.round(dist) });
+      } else {
+        this.cb.onHomeArrow({ show: false });
+      }
+    }
+
+    // gentle beacon pulse
+    if (this._houseGroup?.userData.beacon && !this.inside) {
+      this._houseGroup.userData.beacon.beam.material.opacity = 0.22 + Math.sin(t * 2) * 0.1;
     }
 
     // door prompt

@@ -12,6 +12,23 @@ function slab(w, h, d, color, x, y, z) { // centered exactly at y (for roofs/flo
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color }));
   m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; return m;
 }
+function makeLabelSprite(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256; canvas.height = 80;
+  const ctx = canvas.getContext("2d");
+  ctx.font = "bold 40px system-ui, sans-serif";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(20,20,40,0.78)";
+  const w = Math.min(248, ctx.measureText(text).width + 44);
+  const x = (256 - w) / 2;
+  ctx.beginPath(); ctx.roundRect(x, 16, w, 48, 24); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.fillText(text, 128, 42);
+  const tex = new THREE.CanvasTexture(canvas); tex.minFilter = THREE.LinearFilter;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
+  spr.scale.set(6, 1.9, 1);
+  return spr;
+}
+
 function flower(x, z, color) {
   const g = new THREE.Group();
   g.add(box(0.1, 0.6, 0.1, 0x3a9d4a, 0, 0, 0));
@@ -100,6 +117,15 @@ export function buildHouseExterior(tier = "cottage") {
   }
   g.add(box(mansion ? 5 : 3, 1, 1, 0x3f9d4a, -W / 2 - 1.2, 0.12, 2)); // hedge
   g.add(box(mansion ? 5 : 3, 1, 1, 0x3f9d4a, W / 2 + 1.2, 0.12, 2));
+
+  // ---- tall beacon so you can always spot home from across the city ----
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.7, 1.4, 34, 12, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0xffd24a, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false }));
+  beam.position.set(0, H + 17, -1); g.add(beam);
+  const label = makeLabelSprite("🏠 HOME");
+  label.position.set(0, H + 22, -1); g.add(label);
+  g.userData.beacon = { beam, label };
 
   return { group: g, door: { x: 0, z: D / 2 + 3 }, radius: Math.max(W, D) / 2 + 0.4 };
 }

@@ -10,6 +10,7 @@ import {
   renderShop, renderGarage
 } from "./shop.js";
 import { Multiplayer, makeRoomCode } from "./multiplayer.js";
+import { flyTo } from "./fly.js";
 import { MULTIPLAYER_ENABLED, GEM_VALUE } from "./config.js";
 
 const $ = (id) => document.getElementById(id);
@@ -56,7 +57,41 @@ function refreshHUD() {
   $("gem-count").textContent = state.gems.toLocaleString();
   const w = getWorld(state.world);
   $("world-name").textContent = w.name;
+  updateHint();
   saveState(state);
+}
+
+// dynamic "what should I do next" nudge
+function updateHint() {
+  const pill = $("hint-pill");
+  const owned = state.owned;
+  const hasVehicle = SHOP_ITEMS.some(i => owned.includes(i.id) && (i.type === "bike" || i.type === "car"));
+  const hasHouse = bestHouse(state);
+  const cheapest = SHOP_ITEMS.filter(i => !owned.includes(i.id)).sort((a, b) => a.price - b.price)[0];
+  let msg;
+  if (state.gems === 0) msg = "💎 Walk around and grab some gems!";
+  else if (!hasVehicle && state.money < 150) msg = `💎 Collect ${Math.ceil((150 - state.money) / GEM_VALUE)} more to buy a 🚲 bike!`;
+  else if (!hasVehicle && state.money >= 150) msg = "🛒 You can buy a 🚲 bike now — tap the cart!";
+  else if (!hasHouse && state.money < 8000) msg = "💎 Keep collecting to buy your own 🏠 house!";
+  else if (!hasHouse && state.money >= 8000) msg = "🛒 You can buy a 🏠 house now — tap the cart!";
+  else if (hasHouse) msg = "🏠 Follow the golden beam to your home — or ✈️ travel!";
+  else if (cheapest) msg = `🛒 Save up for a ${cheapest.emoji} ${cheapest.name}!`;
+  else msg = "🌍 Explore and have fun!";
+  pill.textContent = msg;
+  pill.classList.remove("hidden");
+}
+
+// home compass arrow (updated every frame by the engine)
+let _lastArrowDeg = 999;
+function updateHomeArrow(data) {
+  const el = $("home-arrow");
+  if (!data.show) { el.classList.add("hidden"); return; }
+  el.classList.remove("hidden");
+  if (Math.abs(data.deg - _lastArrowDeg) > 1.5) {
+    el.querySelector(".arrow").style.transform = `rotate(${data.deg - 90}deg)`; // ➤ points right at 0°
+    _lastArrowDeg = data.deg;
+  }
+  el.querySelector(".ha-dist").textContent = data.dist + "m";
 }
 
 // contextual enter/exit-house button
@@ -100,12 +135,19 @@ function startGame() {
       onGems: () => { refreshHUD(); toast(`💎 +${GEM_VALUE}!`); },
       onWorld: (w) => refreshHUD(),
       onDoorPrompt: updateDoorButton,
+      onHomeArrow: updateHomeArrow,
     });
     game.loadWorld(state.world);
     if (mp) game.attachMultiplayer(mp);
     game.start(controls);
   }
   refreshHUD();
+
+  // show the how-to-play the very first time
+  if (!state.seenHelp) {
+    state.seenHelp = true; saveState(state);
+    setTimeout(() => openPanel("help-panel"), 350);
+  }
 }
 
 // ---------- shop ----------
@@ -140,8 +182,8 @@ function renderTravel() {
 }
 function travelTo(worldId) {
   closePanel("travel-panel");
-  toast(`✈️ Flying to ${getWorld(worldId).name}...`);
-  setTimeout(() => { game.loadWorld(worldId); refreshHUD(); }, 400);
+  const from = state.world;
+  flyTo(from, worldId, () => { game.loadWorld(worldId); refreshHUD(); });
 }
 
 // ---------- multiplayer room UI ----------
@@ -210,6 +252,8 @@ $("btn-room-back").addEventListener("click", () => {
 
 $("btn-shop").addEventListener("click", () => openPanel("shop-panel"));
 $("btn-travel").addEventListener("click", () => openPanel("travel-panel"));
+$("btn-help").addEventListener("click", () => openPanel("help-panel"));
+$("btn-help-ok").addEventListener("click", () => closePanel("help-panel"));
 $("btn-menu").addEventListener("click", () => openPanel("menu-panel"));
 document.querySelectorAll(".close-btn").forEach(b =>
   b.addEventListener("click", () => closePanel(b.dataset.close)));

@@ -225,6 +225,60 @@ canvas { display: block; }
 .menu-actions { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 10px; }
 .version { color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-top: 14px; }
 
+/* ===== goal hint pill ===== */
+.hint-pill {
+  position: fixed; top: calc(env(safe-area-inset-top) + 58px); left: 50%;
+  transform: translateX(-50%); z-index: 21; max-width: 88vw;
+  background: rgba(20,26,44,0.82); color: #fff; padding: 8px 16px;
+  border-radius: 999px; font-size: 0.92rem; font-weight: 600; text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25); pointer-events: none;
+}
+
+/* ===== home compass arrow ===== */
+.home-arrow {
+  position: fixed; left: 50%; bottom: 26%; transform: translateX(-50%);
+  z-index: 21; display: flex; flex-direction: column; align-items: center;
+  pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+.home-arrow .arrow {
+  font-size: 2.4rem; color: #ffd24a; line-height: 1;
+  transform-origin: 50% 50%; transition: transform .12s linear;
+}
+.home-arrow .ha-label {
+  margin-top: 2px; background: rgba(20,26,44,0.8); color: #fff;
+  padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
+}
+
+/* ===== How-to-Play ===== */
+.help-body { width: 100%; max-width: 560px; color: #eaf0fb; }
+.help-goal {
+  background: rgba(255,210,74,0.16); border: 1px solid rgba(255,210,74,0.4);
+  border-radius: 14px; padding: 12px 14px; line-height: 1.5;
+}
+.help-steps { list-style: none; padding: 0; margin: 14px 0 18px; }
+.help-steps li {
+  background: rgba(255,255,255,0.08); border-radius: 12px; padding: 11px 12px;
+  margin-bottom: 8px; line-height: 1.45; display: flex; gap: 10px; align-items: flex-start;
+}
+.help-steps .he { font-size: 1.3rem; flex-shrink: 0; }
+
+/* ===== flying-across-the-globe overlay ===== */
+#fly-screen {
+  position: fixed; inset: 0; z-index: 60; display: flex;
+  align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 30%, #1b2a55 0%, #0c1330 70%, #070b1f 100%);
+  opacity: 0; pointer-events: none; transition: opacity .3s ease;
+}
+#fly-screen.show { opacity: 1; pointer-events: auto; }
+.fly-inner { width: min(92vw, 560px); text-align: center; position: relative; }
+.fly-title { color: #fff; font-size: 1.5rem; margin: 0 0 6px; }
+.fly-sub { color: #bcd0ff; margin: 8px 0 0; font-weight: 600; letter-spacing: 1px; }
+#fly-map { width: 100%; height: auto; }
+#fly-plane {
+  position: fixed; left: 0; top: 0; font-size: 2rem; z-index: 61;
+  will-change: left, top, transform; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+}
+
 @media (max-width: 500px) {
   .start-card h1 { font-size: 1.8rem; }
   #joystick-base { width: 110px; height: 110px; }

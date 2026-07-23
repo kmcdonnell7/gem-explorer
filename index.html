@@ -62,7 +62,17 @@
     <div class="hud-buttons">
       <button id="btn-shop" class="round-btn">🛒</button>
       <button id="btn-travel" class="round-btn">✈️</button>
+      <button id="btn-help" class="round-btn">❓</button>
       <button id="btn-menu" class="round-btn">☰</button>
+    </div>
+
+    <!-- goal hint -->
+    <div id="hint-pill" class="hint-pill hidden"></div>
+
+    <!-- compass arrow to your house -->
+    <div id="home-arrow" class="home-arrow hidden">
+      <div class="arrow">➤</div>
+      <span class="ha-label">🏠 <span class="ha-dist"></span></span>
     </div>
 
     <!-- Touch joystick -->
@@ -77,6 +87,26 @@
     <button id="btn-door" class="door-btn hidden">🏠<br><small>ENTER</small></button>
 
     <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <!-- ===== How to play panel ===== -->
+  <div id="help-panel" class="panel hidden">
+    <div class="panel-head">
+      <h2>❓ How to Play</h2>
+      <button class="close-btn" data-close="help-panel">✕</button>
+    </div>
+    <div class="help-body">
+      <p class="help-goal">🎯 <b>Your goal:</b> explore the cities, collect gems, and get rich enough to buy a house you can live in — and an airplane to fly the world!</p>
+      <ol class="help-steps">
+        <li><span class="he">🕹️</span> <b>Move</b> with the joystick (bottom-left) or arrow keys. Tap <b>JUMP</b> to hop.</li>
+        <li><span class="he">💎</span> <b>Collect gems</b> — they're scattered everywhere. Each gem gives you <b>💰 10</b>.</li>
+        <li><span class="he">🛒</span> <b>Spend money in the Shop:</b> a 🚲 bike & 🚗 car make you faster, a 🏠 house is your home, an ✈️ airplane is the coolest of all.</li>
+        <li><span class="he">🏠</span> <b>Bought a house?</b> A golden <b>HOME</b> beam appears in the city. Walk to the door and tap <b>ENTER</b> to go inside and hang out!</li>
+        <li><span class="he">✈️</span> <b>Travel</b> to Los Angeles, London & Miami. Your money, gems and house come with you.</li>
+        <li><span class="he">👯</span> <b>Play with a friend</b> from the main menu to explore together.</li>
+      </ol>
+      <button id="btn-help-ok" class="big-btn">Let's play! ▶</button>
+    </div>
   </div>
 
   <!-- ===== Shop panel ===== -->
