@@ -5,17 +5,17 @@ import { STARTING_MONEY } from "./config.js";
 
 export const SHOP_ITEMS = [
   // bikes (fastest to afford)
-  { id: "bmx",      name: "BMX Bike",     emoji: "🚲", price: 150,   type: "bike" },
-  { id: "ebike",    name: "E-Bike",       emoji: "🛵", price: 400,   type: "bike" },
+  { id: "bmx",      name: "BMX Bike",     emoji: "🚲", price: 100,   type: "bike" },
+  { id: "ebike",    name: "E-Bike",       emoji: "🛵", price: 250,   type: "bike" },
+  // houses (cheap — a house is an early goal, not an endgame grind)
+  { id: "cottage",  name: "Cozy House",   emoji: "🏠", price: 500,   type: "house" },
+  { id: "mansion",  name: "Mega Mansion", emoji: "🏰", price: 2000,  type: "house" },
   // cars
-  { id: "hatch",    name: "City Car",     emoji: "🚗", price: 1200,  type: "car" },
-  { id: "sports",   name: "Sports Car",   emoji: "🏎️", price: 4000,  type: "car" },
-  // houses
-  { id: "cottage",  name: "Cozy House",   emoji: "🏠", price: 8000,  type: "house" },
-  { id: "mansion",  name: "Mega Mansion", emoji: "🏰", price: 25000, type: "house" },
+  { id: "hatch",    name: "City Car",     emoji: "🚗", price: 800,   type: "car" },
+  { id: "sports",   name: "Sports Car",   emoji: "🏎️", price: 1500,  type: "car" },
   // airplanes
-  { id: "prop",     name: "Prop Plane",   emoji: "🛩️", price: 15000, type: "airplane" },
-  { id: "jet",      name: "Private Jet",  emoji: "✈️", price: 60000, type: "airplane" },
+  { id: "prop",     name: "Prop Plane",   emoji: "🛩️", price: 2500,  type: "airplane" },
+  { id: "jet",      name: "Private Jet",  emoji: "✈️", price: 5000,  type: "airplane" },
 ];
 
 const SAVE_KEY = "gem-explorer-save-v1";

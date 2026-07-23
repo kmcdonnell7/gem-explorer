@@ -30,7 +30,7 @@ export const FIREBASE_CONFIG = {
 export const MULTIPLAYER_ENABLED = !!FIREBASE_CONFIG.databaseURL;
 
 // ---- Gameplay tuning -------------------------------------------------------
-export const GEM_VALUE = 10;          // money per gem when collected
+export const GEM_VALUE = 25;          // money per gem when collected (gems respawn, so money is renewable)
 export const GEMS_PER_WORLD = 40;     // gems scattered around each world
 export const PLAYER_SPEED = 9;        // walk speed (units/sec)
 export const VEHICLE_SPEED_BONUS = {  // speed multiplier while owning/using

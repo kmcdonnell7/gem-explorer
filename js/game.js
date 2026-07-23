@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { buildWorld, getWorld } from "./worlds.js";
 import { makeAvatar, animateWalk } from "./player.js";
 import { buildHouseExterior, buildHouseInterior } from "./house.js";
+import { makeVehicle } from "./vehicles.js";
 import { GEM_VALUE, GEMS_PER_WORLD, PLAYER_SPEED, VEHICLE_SPEED_BONUS, WORLD_SIZE } from "./config.js";
 
 // deterministic RNG so every player sees gems in the same spots
@@ -85,6 +86,8 @@ export class Game {
     this.playerHolder = new THREE.Group();
     this.playerHolder.add(this.avatar);
     this.scene.add(this.playerHolder);
+    this.vehicleMesh = null;
+    this.currentVehicle = "none";
     this.pos = new THREE.Vector2(0, 6);
     this.facing = 0;
 
@@ -136,8 +139,27 @@ export class Game {
       this.pos.set(0, 8);
     }
     this.playerHolder.position.set(this.pos.x, 0, this.pos.y);
+    this.refreshVehicle();
 
     if (this.cb.onWorld) this.cb.onWorld(world);
+  }
+
+  // show the best owned vehicle under the player (bike/car/airplane)
+  refreshVehicle() {
+    const type = this.cb.vehicle ? this.cb.vehicle() : "none";
+    if (type === this.currentVehicle) return;
+    this.currentVehicle = type;
+    if (this.vehicleMesh) { this.playerHolder.remove(this.vehicleMesh); this._disposeGroup(this.vehicleMesh); this.vehicleMesh = null; }
+    const v = makeVehicle(type);
+    if (v) {
+      v.visible = !this.inside;
+      this.playerHolder.add(v);
+      this.vehicleMesh = v;
+      // when in a car/plane the rider sits a little higher (applied after animateWalk)
+      this._rideLift = (type === "car" || type === "airplane") ? 0.5 : 0;
+    } else {
+      this._rideLift = 0;
+    }
   }
 
   // (re)build & place the owned house into the current world
@@ -207,6 +229,7 @@ export class Game {
     this.worldGroup.visible = false;
     this.gems.forEach(g => g.mesh.visible = false);
     Object.values(this.remoteAvatars).forEach(h => h.visible = false);
+    if (this.vehicleMesh) this.vehicleMesh.visible = false;   // walk around indoors on foot
 
     this.obstacles = inter.obstacles;
     this.bounds = inter.bounds;
@@ -228,6 +251,7 @@ export class Game {
     if (this.worldGroup) this.worldGroup.visible = true;
     this.gems.forEach(g => g.mesh.visible = true);
     Object.values(this.remoteAvatars).forEach(h => h.visible = true);
+    if (this.vehicleMesh) this.vehicleMesh.visible = true;
     this.obstacles = this._worldObstacles;
     this.bounds = null;
     this.inside = false;
@@ -304,6 +328,10 @@ export class Game {
     this.playerHolder.position.z = this.pos.y;
     this.playerHolder.rotation.y += ((this.facing - this.playerHolder.rotation.y + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 12);
     animateWalk(this.avatar, moving, t);
+    if (this._rideLift) this.avatar.position.y += this._rideLift;   // sit up in car/plane
+    if (this.vehicleMesh && this.currentVehicle === "airplane" && this.vehicleMesh.userData.prop) {
+      this.vehicleMesh.userData.prop.rotation.z += dt * 20;         // spin propeller
+    }
 
     // jump (outdoors only)
     if (!this.inside && this.controls.consumeJump() && this._jumpV === undefined) this._jumpV = 9;
@@ -352,6 +380,8 @@ export class Game {
         g.mesh.position.y = g.base + Math.sin(t * 3 + g.index) * 0.2;
         if (Math.hypot(this.pos.x - g.x, this.pos.y - g.z) < 1.6) { this._collect(g); this.gems.splice(i, 1); }
       }
+      // all gems grabbed? refill the city so there's always more to collect
+      if (this.gems.length === 0) this._respawnGems();
     }
 
     // camera
@@ -394,6 +424,12 @@ export class Game {
       }
     }
     return { nx, nz };
+  }
+
+  _respawnGems() {
+    this.state.collected[this.state.world] = [];   // fresh batch
+    this._spawnGems(this.state.world);
+    if (this.cb.onRespawn) this.cb.onRespawn();
   }
 
   _collect(g) {

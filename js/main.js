@@ -67,13 +67,15 @@ function updateHint() {
   const owned = state.owned;
   const hasVehicle = SHOP_ITEMS.some(i => owned.includes(i.id) && (i.type === "bike" || i.type === "car"));
   const hasHouse = bestHouse(state);
+  const bikePrice = SHOP_ITEMS.find(i => i.id === "bmx").price;
+  const housePrice = SHOP_ITEMS.find(i => i.id === "cottage").price;
   const cheapest = SHOP_ITEMS.filter(i => !owned.includes(i.id)).sort((a, b) => a.price - b.price)[0];
   let msg;
   if (state.gems === 0) msg = "💎 Walk around and grab some gems!";
-  else if (!hasVehicle && state.money < 150) msg = `💎 Collect ${Math.ceil((150 - state.money) / GEM_VALUE)} more to buy a 🚲 bike!`;
-  else if (!hasVehicle && state.money >= 150) msg = "🛒 You can buy a 🚲 bike now — tap the cart!";
-  else if (!hasHouse && state.money < 8000) msg = "💎 Keep collecting to buy your own 🏠 house!";
-  else if (!hasHouse && state.money >= 8000) msg = "🛒 You can buy a 🏠 house now — tap the cart!";
+  else if (!hasVehicle && state.money < bikePrice) msg = `💎 Collect ${Math.ceil((bikePrice - state.money) / GEM_VALUE)} more to buy a 🚲 bike!`;
+  else if (!hasVehicle && state.money >= bikePrice) msg = "🛒 You can buy a 🚲 bike now — tap the cart!";
+  else if (!hasHouse && state.money < housePrice) msg = "💎 Keep collecting to buy your own 🏠 house!";
+  else if (!hasHouse && state.money >= housePrice) msg = "🛒 You can buy a 🏠 house now — tap the cart!";
   else if (hasHouse) msg = "🏠 Follow the golden beam to your home — or ✈️ travel!";
   else if (cheapest) msg = `🛒 Save up for a ${cheapest.emoji} ${cheapest.name}!`;
   else msg = "🌍 Explore and have fun!";
@@ -136,6 +138,7 @@ function startGame() {
       onWorld: (w) => refreshHUD(),
       onDoorPrompt: updateDoorButton,
       onHomeArrow: updateHomeArrow,
+      onRespawn: () => toast("✨ Fresh gems appeared!"),
     });
     game.loadWorld(state.world);
     if (mp) game.attachMultiplayer(mp);
@@ -159,6 +162,7 @@ function buyItem(item) {
   renderShop(state, buyItem);
   refreshHUD();
   if (item.type === "house" && game) game.refreshHouse();   // drop the new home into the world
+  if (game && (item.type === "bike" || item.type === "car" || item.type === "airplane")) game.refreshVehicle();
   const line = { bike: "Zoom zoom! You're faster now! 🚲",
                  car: "Vroom! Cars are super fast! 🚗",
                  house: "Home sweet home! Find your 🏠 and go inside!",
